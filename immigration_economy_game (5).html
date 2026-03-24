@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Luis Journey: Immigration and the Economy</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #07111f;
+    color: #ffffff;
+  }
+
+  .game-shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 18px;
+  }
+
+  .top-panel,
+  .main-panel,
+  .side-panel {
+    background: rgba(10, 18, 32, 0.95);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+  }
+
+  .top-panel {
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title-wrap h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+  }
+
+  .title-wrap p {
+    margin: 0;
+    color: #cbd5e1;
+    line-height: 1.5;
+  }
+
+  .badge {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #2563eb, #1d4ed8);
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .hud {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .hud-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .hud-label {
+    color: #93c5fd;
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+  }
+
+  .hud-value {
+    font-size: 1.45rem;
+    font-weight: bold;
+  }
+
+  .meter {
+    margin-top: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+
+  .meter-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #f59e0b, #22c55e);
+    transition: width 0.35s ease;
+  }
+
+  .game-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(310px, 1fr);
+    gap: 16px;
+  }
+
+  .main-panel {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .scene-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px 0;
+    flex-wrap: wrap;
+  }
+
+  .step-pill,
+  .risk-pill {
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 0.92rem;
+  }
+
+  .step-pill { background: rgba(37,99,235,0.18); color: #bfdbfe; }
+  .risk-pill { background: rgba(239,68,68,0.18); color: #fecaca; }
+
+  .scene {
+    min-height: 620px;
+    position: relative;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+
+  .scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 1;
+    transition: all 0.45s ease;
+    z-index: 0;
+  }
+
+  .scene.arrival::before {
+    background:
+      linear-gradient(to top, #1e293b 0 28%, transparent 28%),
+      radial-gradient(circle at 20% 18%, #fde68a 0 8%, transparent 9%),
+      linear-gradient(#60a5fa, #1d4ed8 60%, #0f172a);
+  }
+
+  .scene.work::before {
+    background:
+      linear-gradient(to top, #14532d 0 22%, transparent 22%),
+      linear-gradient(to right, transparent 0 10%, rgba(255,255,255,0.08) 10% 12%, transparent 12% 22%, rgba(255,255,255,0.08) 22% 24%, transparent 24% 34%, rgba(255,255,255,0.08) 34% 36%, transparent 36%),
+      linear-gradient(#34d399, #065f46 60%, #052e16);
+  }
+
+  .scene.money::before {
+    background:
+      linear-gradient(to top, #3f3f46 0 18%, transparent 18%),
+      linear-gradient(to right, transparent 0 12%, rgba(255,255,255,0.12) 12% 18%, transparent 18% 24%, rgba(255,255,255,0.08) 24% 28%, transparent 28% 40%, rgba(255,255,255,0.1) 40% 48%, transparent 48%),
+      linear-gradient(#f59e0b, #92400e 60%, #1f2937);
+  }
+
+  .scene.business::before {
+    background:
+      linear-gradient(to top, #111827 0 20%, transparent 20%),
+      linear-gradient(to right, transparent 0 15%, rgba(255,255,255,0.14) 15% 30%, transparent 30% 38%, rgba(255,255,255,0.08) 38% 52%, transparent 52%),
+      linear-gradient(#a78bfa, #5b21b6 65%, #1e1b4b);
+  }
+
+  .scene.skills::before {
+    background:
+      linear-gradient(to top, #0f172a 0 18%, transparent 18%),
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,0.2) 0 2%, transparent 3%),
+      radial-gradient(circle at 35% 30%, rgba(255,255,255,0.14) 0 2%, transparent 3%),
+      radial-gradient(circle at 75% 18%, rgba(255,255,255,0.18) 0 2%, transparent 3%),
+      linear-gradient(#38bdf8, #1d4ed8 65%, #0f172a);
+  }
+
+  .scene.policy::before {
+    background:
+      linear-gradient(to top, #111827 0 20%, transparent 20%),
+      radial-gradient(circle at 75% 18%, rgba(255,255,255,0.2) 0 5%, transparent 6%),
+      linear-gradient(to right, transparent 0 20%, rgba(255,255,255,0.08) 20% 21%, transparent 21% 50%, rgba(255,255,255,0.08) 50% 51%, transparent 51%),
+      linear-gradient(#fb7185, #7f1d1d 65%, #111827);
+  }
+
+  .scene.ripple::before {
+    background:
+      radial-gradient(circle at 50% 55%, rgba(45,212,191,0.24) 0 8%, transparent 9% 18%, rgba(45,212,191,0.16) 18% 22%, transparent 23% 35%, rgba(45,212,191,0.12) 35% 39%, transparent 40%),
+      linear-gradient(to top, #0f172a 0 18%, transparent 18%),
+      linear-gradient(#2dd4bf, #0f766e 60%, #0f172a);
+  }
+
+  .scene.final::before {
+    background:
+      radial-gradient(circle at 50% 20%, rgba(255,255,255,0.2) 0 4%, transparent 5%),
+      linear-gradient(to top, #111827 0 20%, transparent 20%),
+      linear-gradient(#64748b, #334155 60%, #111827);
+  }
+
+  .scene-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .map-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .map-node {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.12);
+    color: #e2e8f0;
+  }
+
+  .map-node.active {
+    background: #22c55e;
+    color: #052e16;
+  }
+
+  .map-node.done {
+    background: #2563eb;
+    color: white;
+  }
+
+  .map-line {
+    width: 22px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.16);
+  }
+
+  .character-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .sprite-wrap {
+    width: 92px;
+    height: 92px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,0.14);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .luis-sprite {
+    position: relative;
+    width: 52px;
+    height: 72px;
+    transition: transform 0.35s ease;
+  }
+
+  .luis-sprite.walk {
+    transform: translateX(8px);
+  }
+
+  .head {
+    position: absolute;
+    top: 0;
+    left: 14px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #f1c27d;
+    border: 2px solid rgba(0,0,0,0.12);
+    z-index: 2;
+  }
+
+  .hair {
+    position: absolute;
+    top: -1px;
+    left: 12px;
+    width: 28px;
+    height: 14px;
+    border-radius: 14px 14px 8px 8px;
+    background: #111827;
+    z-index: 3;
+  }
+
+  .body {
+    position: absolute;
+    top: 22px;
+    left: 12px;
+    width: 28px;
+    height: 24px;
+    border-radius: 10px;
+    background: #2563eb;
+  }
+
+  .arm {
+    position: absolute;
+    top: 26px;
+    width: 8px;
+    height: 22px;
+    background: #f1c27d;
+    border-radius: 8px;
+  }
+
+  .arm.left { left: 6px; transform: rotate(18deg); }
+  .arm.right { right: 6px; transform: rotate(-18deg); }
+
+  .leg {
+    position: absolute;
+    top: 43px;
+    width: 9px;
+    height: 26px;
+    background: #0f172a;
+    border-radius: 8px;
+  }
+
+  .leg.left { left: 15px; }
+  .leg.right { left: 28px; }
+
+  .shoe {
+    position: absolute;
+    width: 14px;
+    height: 6px;
+    background: #111827;
+    border-radius: 6px;
+    top: 66px;
+  }
+
+  .shoe.left { left: 11px; }
+  .shoe.right { left: 27px; }
+
+  .character-info {
+    background: rgba(10,18,32,0.45);
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .character-info strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .scene-title {
+    font-size: 1.75rem;
+    margin: 0 0 10px;
+  }
+
+  .story-text {
+    margin: 0 0 14px;
+    line-height: 1.65;
+    color: #e2e8f0;
+    max-width: 720px;
+  }
+
+  .message,
+  .concept,
+  .penalty,
+  .success,
+  .event-box,
+  .end-box {
+    padding: 12px 14px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    display: none;
+    line-height: 1.55;
+  }
+
+  .message { background: rgba(255,255,255,0.08); }
+  .concept { background: rgba(37,99,235,0.2); color: #dbeafe; }
+  .penalty { background: rgba(239,68,68,0.18); color: #fecaca; }
+  .success { background: rgba(34,197,94,0.18); color: #dcfce7; }
+  .event-box { background: rgba(245,158,11,0.18); color: #fde68a; }
+  .end-box { background: rgba(255,255,255,0.08); }
+
+  .choices {
+    display: grid;
+    gap: 12px;
+  }
+
+  .choice-btn,
+  .next-btn,
+  .restart-btn {
+    border: none;
+    border-radius: 16px;
+    padding: 14px 15px;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .choice-btn {
+    text-align: left;
+    background: linear-gradient(180deg, #2563eb, #1d4ed8);
+    box-shadow: 0 10px 20px rgba(37,99,235,0.22);
+  }
+
+  .choice-btn:hover,
+  .next-btn:hover,
+  .restart-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .choice-title {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .choice-sub {
+    display: block;
+    color: #dbeafe;
+    font-size: 0.9rem;
+    font-weight: normal;
+    line-height: 1.4;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .next-btn,
+  .restart-btn {
+    background: linear-gradient(180deg, #334155, #1e293b);
+    min-width: 170px;
+  }
+
+  .side-panel {
+    padding: 18px;
+  }
+
+  .side-panel h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  .goal-box,
+  .danger-box,
+  .tips-box {
+    border-radius: 18px;
+    padding: 14px;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  .goal-box { background: rgba(34,197,94,0.14); }
+  .danger-box { background: rgba(239,68,68,0.14); }
+  .tips-box { background: rgba(255,255,255,0.06); }
+
+  .hearts {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(239,68,68,0.18);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .overlay.hit {
+    animation: hitFlash 0.45s ease;
+  }
+
+  @keyframes hitFlash {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .shake {
+    animation: shake 0.35s ease;
+  }
+
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+  }
+
+  .pop {
+    animation: pop 0.35s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+
+  .coins-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+  }
+
+  .coin {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fde68a, #f59e0b 70%, #b45309);
+    border: 2px solid rgba(255,255,255,0.35);
+    display: grid;
+    place-items: center;
+    color: #78350f;
+    font-weight: bold;
+    animation: coinFloat 1s ease forwards;
+  }
+
+  @keyframes coinFloat {
+    0% { opacity: 0; transform: translateY(10px) scale(0.7); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-90px) scale(1.05); }
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2,6,23,0.72);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 18px;
+  }
+
+  .modal-backdrop.show {
+    display: flex;
+  }
+
+  .modal {
+    width: min(430px, 100%);
+    background: linear-gradient(180deg, #111827, #0f172a);
+    border: 1px solid rgba(248,113,113,0.24);
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 24px 50px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+
+  .modal h3 {
+    margin: 0 0 10px;
+    color: #fecaca;
+    font-size: 1.5rem;
+  }
+
+  .modal p {
+    color: #e5e7eb;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .modal button {
+    border: none;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+    color: white;
+  }
+
+  .dramatic-screen {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at top, rgba(255,255,255,0.12), transparent 30%),
+      linear-gradient(180deg, #020617, #0f172a 45%, #111827);
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .dramatic-screen.show {
+    display: flex;
+  }
+
+  .dramatic-card {
+    width: min(760px, 100%);
+    background: rgba(15,23,42,0.96);
+    border-radius: 28px;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.46);
+    padding: 28px;
+    text-align: center;
+  }
+
+  .dramatic-card h1 {
+    margin: 0 0 10px;
+    font-size: 2.3rem;
+  }
+
+  .dramatic-card p {
+    line-height: 1.65;
+    color: #dbe4f0;
+  }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 22px 0;
+  }
+
+  .score-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 18px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .score-card strong {
+    display: block;
+    font-size: 1.45rem;
+    margin-top: 6px;
+  }
+
+  .final-ribbon {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: bold;
+    margin-bottom: 14px;
+  }
+
+  .final-ribbon.win {
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    color: #052e16;
+  }
+
+  .final-ribbon.lose {
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+    color: white;
+  }
+
+  .dramatic-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .dramatic-actions button {
+    border: none;
+    border-radius: 16px;
+    padding: 14px 22px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(180deg, #2563eb, #1d4ed8);
+    color: white;
+  }
+
+  .hidden { display: none; }
+
+  @media (max-width: 900px) {
+    .game-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .scene {
+      min-height: 560px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="game-shell">
+  <div class="top-panel">
+    <div class="top-row">
+      <div class="title-wrap">
+        <h1>Luis Journey: Immigration and the Economy</h1>
+        <p>Guide Luis through work, money, skills, and policy choices. Try to build income, protect savings, and grow the local economy enough to win.</p>
+      </div>
+      <div class="badge" id="rankBadge">Starting Run</div>
+    </div>
+
+    <div class="hud">
+      <div class="hud-card">
+        <div class="hud-label">Income</div>
+        <div class="hud-value" id="incomeValue">$0</div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Savings</div>
+        <div class="hud-value" id="savingsValue">$300</div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Business Growth</div>
+        <div class="hud-value" id="growthValue">0</div>
+        <div class="meter"><div class="meter-fill" id="growthMeter"></div></div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Jobs Supported</div>
+        <div class="hud-value" id="jobsValue">0</div>
+        <div class="meter"><div class="meter-fill" id="jobsMeter"></div></div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Economic Impact</div>
+        <div class="hud-value" id="impactValue">10</div>
+        <div class="meter"><div class="meter-fill" id="impactMeter"></div></div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Lives</div>
+        <div class="hud-value hearts" id="livesValue">❤️❤️❤️</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-grid">
+    <div class="main-panel" id="mainPanel">
+      <div class="scene-header">
+        <div class="step-pill" id="stepPill">Step 1 of 8</div>
+        <div class="risk-pill" id="riskPill">Risk is low</div>
+      </div>
+
+      <div class="scene arrival" id="scene">
+        <div class="overlay" id="hitOverlay"></div>
+        <div class="coins-layer" id="coinsLayer"></div>
+
+        <div class="scene-content">
+          <div class="map-bar" id="mapBar"></div>
+
+          <div class="character-row">
+            <div class="sprite-wrap">
+              <div class="luis-sprite" id="character">
+                <div class="hair"></div>
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arm left"></div>
+                <div class="arm right"></div>
+                <div class="leg left"></div>
+                <div class="leg right"></div>
+                <div class="shoe left"></div>
+                <div class="shoe right"></div>
+              </div>
+            </div>
+            <div class="character-info">
+              <strong id="locationLabel">Location: Arrival Terminal</strong>
+              <span id="statusLabel">Luis is trying to get established and find a strong first step.</span>
+            </div>
+          </div>
+
+          <h2 class="scene-title" id="sceneTitle">Arrival in the U.S.</h2>
+          <p class="story-text" id="storyText"></p>
+
+          <div class="event-box" id="eventBox"></div>
+          <div class="success" id="successBox"></div>
+          <div class="penalty" id="penaltyBox"></div>
+          <div class="message" id="messageBox"></div>
+          <div class="concept" id="conceptBox"></div>
+          <div class="end-box" id="endBox"></div>
+        </div>
+
+        <div class="scene-content">
+          <div class="choices" id="choices"></div>
+          <div class="action-row">
+            <button class="next-btn hidden" id="nextBtn">Next Scene</button>
+            <button class="restart-btn hidden" id="restartBtn">Play Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <h3>Win the game</h3>
+      <div class="goal-box">
+        Finish with:
+        <ul>
+          <li>Economic impact of 65 or more</li>
+          <li>Total income of $10,000 or more</li>
+          <li>Savings above $0</li>
+          <li>At least 1 life left</li>
+        </ul>
+      </div>
+
+      <h3>Lose the game</h3>
+      <div class="danger-box">
+        You lose if:
+        <ul>
+          <li>you run out of lives</li>
+          <li>your savings hit 0 late in the game</li>
+          <li>you finish below the win goals</li>
+        </ul>
+      </div>
+
+      <h3>How penalties work</h3>
+      <div class="tips-box">
+        A weak choice does 3 things:
+        <ul>
+          <li>hurts your score</li>
+          <li>costs a life</li>
+          <li>triggers a hit modal and red screen effect</li>
+        </ul>
+        Good choices can trigger random bonus events between rounds and coin pop effects.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="lifeModalBackdrop">
+  <div class="modal">
+    <h3>You lost a life</h3>
+    <p id="lifeModalText">That choice hurt Luis and lowered the economic outcome for this run.</p>
+    <button id="closeLifeModal">Keep Going</button>
+  </div>
+</div>
+
+<div class="dramatic-screen" id="finalScreen">
+  <div class="dramatic-card">
+    <div class="final-ribbon win hidden" id="winRibbon">Victory</div>
+    <div class="final-ribbon lose hidden" id="loseRibbon">Game Over</div>
+    <h1 id="finalTitle">Final Score</h1>
+    <p id="finalMessage">Luis's story is complete.</p>
+
+    <div class="score-grid">
+      <div class="score-card">Income<strong id="finalIncome">$0</strong></div>
+      <div class="score-card">Savings<strong id="finalSavings">$0</strong></div>
+      <div class="score-card">Impact<strong id="finalImpact">0</strong></div>
+      <div class="score-card">Jobs Supported<strong id="finalJobs">0</strong></div>
+      <div class="score-card">Business Growth<strong id="finalGrowth">0</strong></div>
+      <div class="score-card">Lives Left<strong id="finalLives">0</strong></div>
+    </div>
+
+    <p id="finalExplanation">Economic growth depends on labor supply, productivity, local spending, and business activity.</p>
+
+    <div class="dramatic-actions">
+      <button id="dramaticRestart">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    step: 0,
+    income: 0,
+    savings: 300,
+    businessGrowth: 0,
+    jobsSupported: 0,
+    impact: 10,
+    lives: 3,
+    gameOver: false,
+    jobPath: '',
+    finalPath: '',
+    currentEvent: null,
+    pendingEventIndex: -1
+  };
+
+  const randomEvents = [
+    {
+      title: 'Bonus overtime shift',
+      text: 'Luis gets extra hours this week because demand is high.',
+      effects: { income: 350, impact: 2 }
+    },
+    {
+      title: 'Rent goes up',
+      text: 'Housing costs rise, so Luis has to spend more than expected.',
+      effects: { savings: -180, impact: -1 }
+    },
+    {
+      title: 'Helpful neighbor connection',
+      text: 'A local contact points Luis toward a stronger job lead and better options.',
+      effects: { impact: 4, businessGrowth: 1 }
+    },
+    {
+      title: 'Bus delay and missed hours',
+      text: 'Transportation problems cost Luis time and a little pay.',
+      effects: { income: -120, savings: -60 }
+    },
+    {
+      title: 'Busy weekend for local shops',
+      text: 'More people are spending locally, which helps businesses grow faster.',
+      effects: { impact: 3, businessGrowth: 2, jobsSupported: 1 }
+    }
+  ];
+
+  const steps = [
+    {
+      sceneClass: 'arrival',
+      title: 'Arrival in the U.S.',
+      location: 'Arrival Terminal',
+      status: 'Luis needs a strong first move to enter the labor market fast.',
+      risk: 'Risk is low',
+      story: 'Luis arrives in the United States. He has little money, no local network yet, and needs to find the quickest path into the workforce.',
+      choices: [
+        {
+          title: 'Go to a community job center',
+          sub: 'Build contacts, get job leads, and reduce time without work.',
+          outcome: 'Luis gets connected to employers quickly and spends less time stuck without income.',
+          concept: 'Better job matching helps workers fill open jobs faster, which makes the labor market more efficient.',
+          success: true,
+          effects: { impact: 10, savings: 150, jobsSupported: 1 }
+        },
+        {
+          title: 'Call relatives and ask for referrals',
+          sub: 'Use social networks to find practical openings fast.',
+          outcome: 'Luis finds a few promising leads through people he already trusts, though the options are more limited.',
+          concept: 'Social networks often help workers enter the labor market when formal systems are hard to access.',
+          success: true,
+          effects: { impact: 6, savings: 80 }
+        },
+        {
+          title: 'Search randomly with no plan',
+          sub: 'Spend time and money moving around without reliable leads.',
+          outcome: 'Luis wastes time and cash chasing weak leads and falls behind early.',
+          concept: 'When workers lack information, jobs stay unfilled longer and economic contribution starts later.',
+          success: false,
+          effects: { impact: -6, savings: -150 }
+        }
+      ]
+    },
+    {
+      sceneClass: 'work',
+      title: 'Choose a Job',
+      location: 'Open Jobs Board',
+      status: 'Several industries need workers right now.',
+      risk: 'Risk is medium',
+      story: 'Luis sees openings in agriculture, construction, and food service. Each one fills a labor shortage in a different part of the economy.',
+      choices: [
+        {
+          title: 'Take farm work during harvest season',
+          sub: 'Help prevent crops from being lost in the fields.',
+          outcome: 'Luis helps save harvest output that might have gone unpicked.',
+          concept: 'Immigrant workers often fill labor shortages in agriculture and keep food production moving.',
+          success: true,
+          effects: { income: 1900, impact: 12, businessGrowth: 5, jobsSupported: 1 },
+          set: { jobPath: 'farm work' }
+        },
+        {
+          title: 'Take construction work on delayed projects',
+          sub: 'Help crews finish jobs faster and lower delays.',
+          outcome: 'Luis helps complete projects sooner and supports higher output.',
+          concept: 'More workers in construction can raise production and reduce costly delays.',
+          success: true,
+          effects: { income: 2300, impact: 14, businessGrowth: 6, jobsSupported: 1 },
+          set: { jobPath: 'construction' }
+        },
+        {
+          title: 'Wait for a perfect job and turn down current offers',
+          sub: 'Hold out instead of filling a job shortage now.',
+          outcome: 'Luis goes longer without steady work and loses early earning power.',
+          concept: 'Delaying labor force entry slows output, income, and business support.',
+          success: false,
+          effects: { impact: -8, savings: -100 }
+        }
+      ]
+    },
+    {
+      sceneClass: 'money',
+      title: 'Wages and Spending',
+      location: 'Neighborhood Market',
+      status: 'Income choices now shape both stability and local business activity.',
+      risk: 'Risk is medium',
+      story: 'Luis gets his first strong paycheck. What he does with his money affects his future and the local businesses around him.',
+      choices: [
+        {
+          title: 'Split income between rent, food, and savings',
+          sub: 'Build stability while still spending in the local economy.',
+          outcome: 'Luis pays bills, saves for emergencies, and supports nearby stores.',
+          concept: 'Income can support both household stability and local business revenue at the same time.',
+          success: true,
+          effects: { savings: 650, impact: 12, businessGrowth: 5, jobsSupported: 1 }
+        },
+        {
+          title: 'Spend mostly locally and keep only a small cushion',
+          sub: 'Push money into local businesses right away.',
+          outcome: 'Luis gives local businesses a bigger short-term boost, though he keeps less savings for later.',
+          concept: 'Consumer spending keeps money moving through the local economy and supports business revenue.',
+          success: true,
+          effects: { savings: 250, impact: 16, businessGrowth: 8, jobsSupported: 1 }
+        },
+        {
+          title: 'Spend carelessly and save nothing',
+          sub: 'Buy fast, ignore long-term stability.',
+          outcome: 'Luis has fun for a moment, but ends up exposed to setbacks with almost no cushion.',
+          concept: 'Without savings, workers are more vulnerable to shocks, which can weaken long-term economic stability.',
+          success: false,
+          effects: { savings: -300, impact: -4, businessGrowth: 1 }
+        }
+      ]
+    },
+    {
+      sceneClass: 'business',
+      title: 'Business Owner Decision',
+      location: 'Local Shop and Worksite',
+      status: 'A local employer needs enough workers to keep up with demand.',
+      risk: 'Risk is medium',
+      story: 'A business owner is behind on orders and short on staff. Luis has a real chance to improve output and customer service.',
+      choices: [
+        {
+          title: 'The owner hires Luis full time',
+          sub: 'Stabilize staffing and serve more customers.',
+          outcome: 'The business expands output and avoids losing sales from delays.',
+          concept: 'Hiring enough workers raises output and helps businesses grow.',
+          success: true,
+          effects: { income: 2100, impact: 14, businessGrowth: 10, jobsSupported: 2 }
+        },
+        {
+          title: 'The owner hires Luis part time',
+          sub: 'Improve things, but stay somewhat short-staffed.',
+          outcome: 'The business gets relief, though staffing limits still hold back full growth.',
+          concept: 'Partial hiring helps output, but labor shortages can still limit growth.',
+          success: true,
+          effects: { income: 1200, impact: 8, businessGrowth: 5, jobsSupported: 1 }
+        },
+        {
+          title: 'The owner does not hire Luis',
+          sub: 'Keep trying to run with too few workers.',
+          outcome: 'The business stays stretched thin and loses some sales from longer waits.',
+          concept: 'When firms cannot find workers, they often produce less and earn less.',
+          success: false,
+          effects: { impact: -10, businessGrowth: -3 }
+        }
+      ]
+    },
+    {
+      sceneClass: 'skills',
+      title: 'Skill Growth',
+      location: 'Night Class Center',
+      status: 'Luis can stay the same or raise his value to employers.',
+      risk: 'Risk is medium',
+      story: 'Luis now has experience. He can build new skills for better pay and productivity, or stay in the same position.',
+      choices: [
+        {
+          title: 'Take night classes and training',
+          sub: 'Raise productivity and qualify for stronger wages.',
+          outcome: 'Luis becomes more productive and better paid.',
+          concept: 'Education and training build human capital, which can raise productivity and wages.',
+          success: true,
+          effects: { income: 2500, savings: 300, impact: 14, businessGrowth: 8 }
+        },
+        {
+          title: 'Learn on the job over time',
+          sub: 'Grow steadily without formal classes.',
+          outcome: 'Luis improves more slowly, but still becomes more valuable.',
+          concept: 'Work experience also raises productivity, though often more slowly than formal training.',
+          success: true,
+          effects: { income: 1600, savings: 150, impact: 8, businessGrowth: 5 }
+        },
+        {
+          title: 'Do not build new skills',
+          sub: 'Stay in the same role with limited growth.',
+          outcome: 'Luis keeps earning, but his wage growth and productivity stay lower.',
+          concept: 'Without skill growth, wage and productivity gains tend to stay lower.',
+          success: false,
+          effects: { income: 700, impact: -5, businessGrowth: 1 }
+        }
+      ]
+    },
+    {
+      sceneClass: 'policy',
+      title: 'Policy Change',
+      location: 'Policy Crossroads',
+      status: 'Rules now affect hiring, output, and worker access.',
+      risk: 'Risk is high',
+      story: 'A policy shift changes how easy it is for businesses to find workers and how stable Luis’s path becomes.',
+      choices: [
+        {
+          title: 'A more open policy makes hiring easier',
+          sub: 'Businesses can fill openings and expand output.',
+          outcome: 'More workers fill needed jobs, which helps firms grow and meet demand.',
+          concept: 'A larger labor force can raise total production and support economic growth.',
+          success: true,
+          effects: { income: 800, impact: 14, businessGrowth: 9, jobsSupported: 1 }
+        },
+        {
+          title: 'Rules stay mixed, with some barriers but some access',
+          sub: 'Growth continues, but not as smoothly.',
+          outcome: 'Businesses still face friction, though the economy keeps moving.',
+          concept: 'Partial barriers can slow labor market efficiency without fully stopping growth.',
+          success: true,
+          effects: { income: 300, impact: 5, businessGrowth: 3 }
+        },
+        {
+          title: 'Stricter laws reduce available workers',
+          sub: 'Hiring gets harder and production slows.',
+          outcome: 'Businesses struggle to fill roles and some output drops.',
+          concept: 'When labor supply falls, shortages can reduce total output even if some wages rise in the short run.',
+          success: false,
+          effects: { income: -500, impact: -14, businessGrowth: -8 }
+        }
+      ]
+    },
+    {
+      sceneClass: 'ripple',
+      title: 'Economic Ripple Effect',
+      location: 'Local Community',
+      status: 'Luis now affects more than one paycheck or one job.',
+      risk: 'Risk is high',
+      story: 'Luis’s work and spending now ripple into stores, services, suppliers, and local hiring. One person starts affecting many others.',
+      choices: [
+        {
+          title: 'Keep spending and working in the same community',
+          sub: 'Let earnings circulate locally again and again.',
+          outcome: 'Luis’s income keeps supporting the same local businesses and services.',
+          concept: 'Money has a bigger local impact when it keeps circulating through the same community.',
+          success: true,
+          effects: { impact: 18, businessGrowth: 10, jobsSupported: 2, savings: 250 }
+        },
+        {
+          title: 'Mix local spending with some savings and mobility',
+          sub: 'Spread the benefit, but still support the area some of the time.',
+          outcome: 'The local economy benefits, though less strongly than under concentrated local spending.',
+          concept: 'Local economic impact is stronger when a larger share of earnings stays in the same market.',
+          success: true,
+          effects: { impact: 9, businessGrowth: 4, jobsSupported: 1, savings: 200 }
+        },
+        {
+          title: 'Move often and spend very little locally',
+          sub: 'Keep earnings from building strong local momentum.',
+          outcome: 'Luis still contributes, but the local multiplier effect stays weaker.',
+          concept: 'When money does not keep circulating locally, the ripple effect is smaller.',
+          success: false,
+          effects: { impact: -6, businessGrowth: 1 }
+        }
+      ]
+    },
+    {
+      sceneClass: 'final',
+      title: 'Final Decision',
+      location: 'Endgame Choice',
+      status: 'Luis can stay a worker or become a job creator.',
+      risk: 'Final turn',
+      story: 'Luis now has work experience, some savings, and a reputation. One last move decides how strong his total economic impact becomes.',
+      choices: [
+        {
+          title: 'Start a small business',
+          sub: 'Use skills and savings to become an employer.',
+          outcome: 'Luis creates jobs for other people and adds another layer of growth to the economy.',
+          concept: 'Immigrants do not only fill jobs, they also create businesses and new employment.',
+          success: true,
+          effects: { income: 3200, savings: -200, impact: 20, businessGrowth: 15, jobsSupported: 3 },
+          set: { finalPath: 'business owner' }
+        },
+        {
+          title: 'Stay in the workforce and move up',
+          sub: 'Be a reliable worker with growing output.',
+          outcome: 'Luis becomes a stable long-term worker who keeps a business productive.',
+          concept: 'Reliable workers help businesses maintain output and support steady economic activity.',
+          success: true,
+          effects: { income: 1900, savings: 400, impact: 11, businessGrowth: 6, jobsSupported: 1 },
+          set: { finalPath: 'long-term worker' }
+        },
+        {
+          title: 'Take on debt with no plan and leave work',
+          sub: 'Lose momentum after building it.',
+          outcome: 'Luis gives up a stable path and weakens both his finances and local impact.',
+          concept: 'When workers leave productive roles without a stable plan, income and growth can fall quickly.',
+          success: false,
+          effects: { income: -700, savings: -500, impact: -12, businessGrowth: -4 }
+        }
+      ]
+    }
+  ];
+
+  const incomeValue = document.getElementById('incomeValue');
+  const savingsValue = document.getElementById('savingsValue');
+  const growthValue = document.getElementById('growthValue');
+  const jobsValue = document.getElementById('jobsValue');
+  const impactValue = document.getElementById('impactValue');
+  const livesValue = document.getElementById('livesValue');
+  const growthMeter = document.getElementById('growthMeter');
+  const jobsMeter = document.getElementById('jobsMeter');
+  const impactMeter = document.getElementById('impactMeter');
+  const rankBadge = document.getElementById('rankBadge');
+
+  const stepPill = document.getElementById('stepPill');
+  const riskPill = document.getElementById('riskPill');
+  const scene = document.getElementById('scene');
+  const mapBar = document.getElementById('mapBar');
+  const character = document.getElementById('character');
+  const locationLabel = document.getElementById('locationLabel');
+  const statusLabel = document.getElementById('statusLabel');
+  const sceneTitle = document.getElementById('sceneTitle');
+  const storyText = document.getElementById('storyText');
+  const eventBox = document.getElementById('eventBox');
+  const successBox = document.getElementById('successBox');
+  const penaltyBox = document.getElementById('penaltyBox');
+  const messageBox = document.getElementById('messageBox');
+  const conceptBox = document.getElementById('conceptBox');
+  const endBox = document.getElementById('endBox');
+  const choices = document.getElementById('choices');
+  const nextBtn = document.getElementById('nextBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const hitOverlay = document.getElementById('hitOverlay');
+  const mainPanel = document.getElementById('mainPanel');
+  const coinsLayer = document.getElementById('coinsLayer');
+
+  const lifeModalBackdrop = document.getElementById('lifeModalBackdrop');
+  const lifeModalText = document.getElementById('lifeModalText');
+  const closeLifeModal = document.getElementById('closeLifeModal');
+
+  const finalScreen = document.getElementById('finalScreen');
+  const winRibbon = document.getElementById('winRibbon');
+  const loseRibbon = document.getElementById('loseRibbon');
+  const finalTitle = document.getElementById('finalTitle');
+  const finalMessage = document.getElementById('finalMessage');
+  const finalIncome = document.getElementById('finalIncome');
+  const finalSavings = document.getElementById('finalSavings');
+  const finalImpact = document.getElementById('finalImpact');
+  const finalJobs = document.getElementById('finalJobs');
+  const finalGrowth = document.getElementById('finalGrowth');
+  const finalLives = document.getElementById('finalLives');
+  const finalExplanation = document.getElementById('finalExplanation');
+  const dramaticRestart = document.getElementById('dramaticRestart');
+
+  function clamp(num, min, max) {
+    return Math.max(min, Math.min(max, num));
+  }
+
+  function getLivesDisplay() {
+    let hearts = '';
+    for (let i = 0; i < state.lives; i++) hearts += '❤️';
+    for (let i = state.lives; i < 3; i++) hearts += '🖤';
+    return hearts;
+  }
+
+  function getRankLabel() {
+    if (state.impact >= 85) return 'Economic MVP';
+    if (state.impact >= 65) return 'Growth Builder';
+    if (state.impact >= 40) return 'Making Progress';
+    return 'Starting Run';
+  }
+
+  function updateHUD() {
+    incomeValue.textContent = `$${state.income}`;
+    savingsValue.textContent = `$${state.savings}`;
+    growthValue.textContent = state.businessGrowth;
+    jobsValue.textContent = state.jobsSupported;
+    impactValue.textContent = state.impact;
+    livesValue.textContent = getLivesDisplay();
+
+    growthMeter.style.width = clamp(state.businessGrowth * 4, 0, 100) + '%';
+    jobsMeter.style.width = clamp(state.jobsSupported * 12, 0, 100) + '%';
+    impactMeter.style.width = clamp(state.impact, 0, 100) + '%';
+    rankBadge.textContent = getRankLabel();
+  }
+
+  function buildMap() {
+    mapBar.innerHTML = '';
+    steps.forEach((_, index) => {
+      const node = document.createElement('div');
+      node.className = 'map-node';
+      if (index < state.step) node.classList.add('done');
+      if (index === state.step) node.classList.add('active');
+      node.textContent = index + 1;
+      mapBar.appendChild(node);
+      if (index < steps.length - 1) {
+        const line = document.createElement('div');
+        line.className = 'map-line';
+        mapBar.appendChild(line);
+      }
+    });
+  }
+
+  function clearMessages() {
+    eventBox.style.display = 'none';
+    successBox.style.display = 'none';
+    penaltyBox.style.display = 'none';
+    messageBox.style.display = 'none';
+    conceptBox.style.display = 'none';
+    endBox.style.display = 'none';
+  }
+
+  function spawnCoins(count = 6) {
+    for (let i = 0; i < count; i++) {
+      const coin = document.createElement('div');
+      coin.className = 'coin';
+      coin.textContent = '$';
+      coin.style.left = `${18 + Math.random() * 70}%`;
+      coin.style.top = `${45 + Math.random() * 25}%`;
+      coin.style.animationDelay = `${i * 0.06}s`;
+      coinsLayer.appendChild(coin);
+      setTimeout(() => coin.remove(), 1200);
+    }
+  }
+
+  function renderStep() {
+    const step = steps[state.step];
+    scene.className = 'scene ' + step.sceneClass;
+    stepPill.textContent = `Step ${state.step + 1} of ${steps.length}`;
+    riskPill.textContent = step.risk;
+    locationLabel.textContent = `Location: ${step.location}`;
+    statusLabel.textContent = step.status;
+    sceneTitle.textContent = step.title;
+    storyText.textContent = step.story;
+    character.classList.remove('walk');
+    void character.offsetWidth;
+    character.classList.add('walk');
+    buildMap();
+    clearMessages();
+    choices.innerHTML = '';
+    nextBtn.classList.add('hidden');
+    restartBtn.classList.add('hidden');
+
+    if (state.currentEvent && state.pendingEventIndex === state.step) {
+      eventBox.textContent = `Random event: ${state.currentEvent.title}. ${state.currentEvent.text}`;
+      eventBox.style.display = 'block';
+      state.currentEvent = null;
+      state.pendingEventIndex = -1;
+    }
+
+    step.choices.forEach((choice) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = `<span class="choice-title">${choice.title}</span><span class="choice-sub">${choice.sub}</span>`;
+      btn.addEventListener('click', () => handleChoice(choice));
+      choices.appendChild(btn);
+    });
+  }
+
+  function applyEffects(effects) {
+    state.income += effects.income || 0;
+    state.savings += effects.savings || 0;
+    state.businessGrowth += effects.businessGrowth || 0;
+    state.jobsSupported += effects.jobsSupported || 0;
+    state.impact += effects.impact || 0;
+
+    state.income = Math.max(0, state.income);
+    state.savings = Math.max(0, state.savings);
+    state.businessGrowth = Math.max(0, state.businessGrowth);
+    state.jobsSupported = Math.max(0, state.jobsSupported);
+    state.impact = Math.max(0, state.impact);
+  }
+
+  function maybeTriggerRandomEvent() {
+    if (state.step >= steps.length - 1) return;
+    if (Math.random() < 0.55) {
+      const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+      state.currentEvent = event;
+      state.pendingEventIndex = state.step + 1;
+      applyEffects(event.effects);
+    }
+  }
+
+  function hitEffect() {
+    mainPanel.classList.remove('shake');
+    hitOverlay.classList.remove('hit');
+    void mainPanel.offsetWidth;
+    mainPanel.classList.add('shake');
+    hitOverlay.classList.add('hit');
+  }
+
+  function goodEffect() {
+    mainPanel.classList.remove('pop');
+    void mainPanel.offsetWidth;
+    mainPanel.classList.add('pop');
+    spawnCoins(7);
+  }
+
+  function disableChoices() {
+    Array.from(choices.children).forEach((btn) => {
+      btn.disabled = true;
+      btn.style.opacity = '0.62';
+    });
+  }
+
+  function showLifeModal(text) {
+    lifeModalText.textContent = text;
+    lifeModalBackdrop.classList.add('show');
+  }
+
+  function checkLoss() {
+    if (state.lives <= 0) {
+      endGame(false, 'Luis ran out of chances after too many weak choices.');
+      return true;
+    }
+
+    if (state.step >= 5 && state.savings <= 0) {
+      endGame(false, 'Luis reached the late game with no savings cushion left.');
+      return true;
+    }
+
+    return false;
+  }
+
+  function handleChoice(choice) {
+    if (state.gameOver) return;
+
+    applyEffects(choice.effects);
+
+    if (choice.set) {
+      Object.keys(choice.set).forEach((key) => {
+        state[key] = choice.set[key];
+      });
+    }
+
+    clearMessages();
+    messageBox.textContent = choice.outcome;
+    messageBox.style.display = 'block';
+    conceptBox.textContent = `Economic concept: ${choice.concept}`;
+    conceptBox.style.display = 'block';
+
+    if (choice.success) {
+      successBox.textContent = 'Good move. Luis gains momentum.';
+      successBox.style.display = 'block';
+      goodEffect();
+      maybeTriggerRandomEvent();
+    } else {
+      state.lives -= 1;
+      penaltyBox.textContent = 'Wrong move. Luis loses one life and the economy takes a hit.';
+      penaltyBox.style.display = 'block';
+      hitEffect();
+      showLifeModal('That choice cost Luis a life. Weak decisions can hurt income, stability, and local economic growth.');
+    }
+
+    updateHUD();
+    disableChoices();
+
+    if (checkLoss()) return;
+
+    if (state.step < steps.length - 1) {
+      nextBtn.classList.remove('hidden');
+    } else {
+      const won = state.impact >= 65 && state.income >= 10000 && state.savings > 0 && state.lives > 0;
+      endGame(won);
+    }
+  }
+
+  function endGame(won, customLossText = '') {
+    state.gameOver = true;
+    choices.innerHTML = '';
+    nextBtn.classList.add('hidden');
+    restartBtn.classList.remove('hidden');
+    clearMessages();
+
+    if (won) {
+      scene.className = 'scene final';
+      sceneTitle.textContent = 'You Win';
+      storyText.textContent = 'Luis built enough income, savings, and economic impact to show how one immigrant can support labor markets, businesses, and growth.';
+      endBox.innerHTML = `
+        <strong>Final summary</strong><br><br>
+        Luis finished as a ${state.finalPath || 'worker'} with strong income, positive savings, and enough impact to win the run.
+      `;
+      endBox.style.display = 'block';
+      successBox.textContent = 'Win condition reached. Luis finished strong.';
+      successBox.style.display = 'block';
+      conceptBox.textContent = 'Economic concept: Labor supply, productivity, spending, and business creation all shape economic growth.';
+      conceptBox.style.display = 'block';
+      stepPill.textContent = 'Victory';
+      riskPill.textContent = 'Run completed';
+      locationLabel.textContent = 'Location: Economic Finish Line';
+      statusLabel.textContent = 'Luis turned work and opportunity into broader growth.';
+    } else {
+      scene.className = 'scene final';
+      sceneTitle.textContent = 'Game Over';
+      storyText.textContent = 'This run fell short. Weak choices or low stability made it harder for Luis and the local economy to build momentum together.';
+      endBox.innerHTML = `
+        <strong>Final summary</strong><br><br>
+        ${customLossText || 'Luis finished below the score needed to win.'}
+      `;
+      endBox.style.display = 'block';
+      penaltyBox.textContent = 'Loss condition reached. Try a better path next run.';
+      penaltyBox.style.display = 'block';
+      conceptBox.textContent = 'Economic concept: Lower labor participation, weaker savings, and smaller local ripple effects can slow economic growth.';
+      conceptBox.style.display = 'block';
+      stepPill.textContent = 'Defeat';
+      riskPill.textContent = 'Run ended';
+      locationLabel.textContent = 'Location: Reset Point';
+      statusLabel.textContent = 'A stronger mix of work, savings, and growth choices would have helped more.';
+    }
+
+    showFinalScreen(won, customLossText);
+  }
+
+  function showFinalScreen(won, customLossText) {
+    finalIncome.textContent = `$${state.income}`;
+    finalSavings.textContent = `$${state.savings}`;
+    finalImpact.textContent = state.impact;
+    finalJobs.textContent = state.jobsSupported;
+    finalGrowth.textContent = state.businessGrowth;
+    finalLives.textContent = state.lives;
+
+    if (won) {
+      winRibbon.classList.remove('hidden');
+      loseRibbon.classList.add('hidden');
+      finalTitle.textContent = 'Luis Built Real Economic Momentum';
+      finalMessage.textContent = 'You won. Luis filled labor needs, earned income, spent money into the economy, and supported business growth.';
+      finalExplanation.textContent = 'This ending shows how immigrant labor can support production, wages, local demand, and even job creation when the path stays stable.';
+    } else {
+      loseRibbon.classList.remove('hidden');
+      winRibbon.classList.add('hidden');
+      finalTitle.textContent = 'Luis Fell Short This Run';
+      finalMessage.textContent = customLossText || 'You lost. The choices in this run did not create enough stability or growth to reach the win targets.';
+      finalExplanation.textContent = 'This ending shows how weaker job access, lower savings, and less productive choices can reduce overall economic momentum.';
+    }
+
+    finalScreen.classList.add('show');
+  }
+
+  function resetGame() {
+    state.step = 0;
+    state.income = 0;
+    state.savings = 300;
+    state.businessGrowth = 0;
+    state.jobsSupported = 0;
+    state.impact = 10;
+    state.lives = 3;
+    state.gameOver = false;
+    state.jobPath = '';
+    state.finalPath = '';
+    state.currentEvent = null;
+    state.pendingEventIndex = -1;
+    finalScreen.classList.remove('show');
+    lifeModalBackdrop.classList.remove('show');
+    updateHUD();
+    renderStep();
+  }
+
+  nextBtn.addEventListener('click', () => {
+    state.step += 1;
+    renderStep();
+  });
+
+  restartBtn.addEventListener('click', resetGame);
+  dramaticRestart.addEventListener('click', resetGame);
+  closeLifeModal.addEventListener('click', () => lifeModalBackdrop.classList.remove('show'));
+
+  updateHUD();
+  renderStep();
+</script>
+</body>
+</html>
